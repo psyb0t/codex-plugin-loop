@@ -1,0 +1,4 @@
+interface:
+  display_name: "Loop"
+  short_description: "Run recurring work in an active CLI session"
+  default_prompt: "Use $loop:loop every 10 minutes to repeat these instructions while this Codex CLI session stays open."

@@ -1,0 +1,14 @@
+.git
+.github
+.agents
+.research_files
+.agent_notes
+AGENTS.md
+CODEX.local.md
+.env
+.env.*
+.vscode
+.idea
+*.log
+coverage.*
+.telemetry/
