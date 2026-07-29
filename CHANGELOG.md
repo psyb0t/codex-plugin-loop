@@ -4,6 +4,17 @@ All notable changes per release. Versions follow [semver](https://semver.org)
 pre-1.0 conventions: minor bumps may include breaking changes (called out
 explicitly), patch bumps are docs / build / fixes only.
 
+## v0.1.1 — 2026-07-29
+
+- Rewrote the README. The old one described the plugin the way a spec does —
+  it never said what the thing is for, buried the fact that it is deliberately
+  not a scheduler, and left the actual limits ("what it won't do") unstated.
+  The new one leads with the use case, states the non-durability up front as a
+  design choice rather than a caveat, documents the controls as a table, and
+  spells out the refusals: no calendar schedules, no surviving a closed
+  terminal, no widening its own permissions, no spinning on a blocker, never
+  more than one timer.
+
 ## v0.1.0 — 2026-07-29
 
 First release.

@@ -1,6 +1,6 @@
 {
   "name": "loop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Keep executing instructions at a fixed interval in an active Codex CLI session.",
   "author": {
     "name": "psyb0t",
