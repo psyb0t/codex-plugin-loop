@@ -64,10 +64,11 @@ Interval seconds:
 <normalized positive integer>
 
 Completion rule:
-<the user's rule, or "Continue until the user pauses or clears this goal.">
+<the user's rule, or "Continue until the user runs $loop:stop.">
 
 Start the first iteration immediately. Execute, verify, wait for the timer, and
-repeat until the completion rule is met or the user pauses or clears the goal.
+repeat until the completion rule is met or the user ends the loop. Never ask the
+user for approval mid-iteration and never end the loop on your own.
 ```
 
 Preserve the user's intent, constraints, paths, and success criteria. Do not add
@@ -78,17 +79,12 @@ permissions or broaden the work. Use the active goal capability equivalent to
 
 After the goal is active, immediately continue at **Run the loop**. Do not
 return after merely describing the loop. Keep the goal active across turn
-boundaries until the completion rule is met, the user pauses or clears it, or
-progress requires user input.
+boundaries until the completion rule is met or the user ends the loop.
 
-Give one concise startup update containing the normalized interval, completion
-rule, and these controls:
-
-- `/goal pause` pauses the loop objective;
-- `/goal resume` resumes it;
-- `/goal clear` removes it;
-- `/ps` inspects the current timer process; and
-- `/stop` stops session-owned background terminals.
+Give one concise startup update containing the normalized interval, the
+completion rule, and one line telling the user that `$loop:stop` ends the loop.
+Do not advertise `/goal` or other slash commands — `$loop:loop` and
+`$loop:stop` are the interface.
 
 The loop is intentionally not durable. Closing the CLI, ending the session, or
 stopping its terminal processes ends active waiting.
@@ -109,20 +105,50 @@ For each iteration:
 6. Give a concise progress update with the delta and verification result.
 
 Continue within an iteration while useful work remains and the action is safe.
-Do not stop after merely describing what should happen next.
+Do not stop after merely describing what should happen next. Apply the change
+you prepared — a prepared plan the user never sees applied is a wasted
+iteration.
 
 Never broaden filesystem, network, account, or external-action authority beyond
 the goal instructions. Do not perform destructive or irreversible actions
 unless those instructions explicitly authorize the exact scope. Validate
 untrusted input at every boundary and keep secrets out of logs and summaries.
 
+Those limits are about SCOPE, not about pausing. Something outside the granted
+scope is skipped and reported, never escalated to the user mid-loop and never
+used as a reason to stop.
+
 Evaluate the completion rule after verification:
 
 - If complete, mark the active goal complete and report `complete`.
 - If the goal is paused or cleared, stop without starting another timer.
-- If blocked on user input, do not spin. Preserve progress, report the minimum
-  required action, and pause or leave the goal awaiting the user as supported.
-- If useful work remains, report `continue`, then wait for the next iteration.
+- Otherwise report `continue` and wait for the next iteration.
+
+## Never ask, never self-stop
+
+The user started this loop so it would run without them. Two hard rules follow.
+
+**Do not ask the user for approval, confirmation, or a decision inside an
+iteration.** Not for a plan, not for a next step, not for permission to apply
+something already prepared. Treat the goal instructions as the approval — they
+are what the user authorized when they started the loop. The only exception is
+when those instructions explicitly say to check in; then ask exactly what they
+say to ask, and continue the loop while waiting rather than halting it.
+
+**Do not end the loop yourself.** Only four things end it: the completion rule
+being met, the user invoking `$loop:stop`, the user clearing or pausing the
+goal, or the user saying so in the session. Never stop the timer because you are
+uncertain, because something needs a decision, or because progress feels stuck.
+
+When an item cannot be done — it needs authority the goal never granted, an
+external dependency is unavailable, a decision is genuinely the user's — do NOT
+halt. Record it in the progress report as blocked with the reason, pick the next
+item that CAN move, and start the next timer as normal. A blocked item is a line
+in a report, not a reason to stop working.
+
+If every remaining item is blocked, say so plainly in the report, then still
+start the next timer and re-check on the following iteration; circumstances
+change between iterations and something may have unblocked.
 
 ## Wait for the next iteration
 

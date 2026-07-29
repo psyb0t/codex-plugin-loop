@@ -63,13 +63,19 @@ Everything happens in the TUI you're already looking at:
 
 | Command | What it does |
 |---|---|
-| `/goal pause` | Freeze the loop, keep the objective |
-| `/goal resume` | Pick up where it stopped |
-| `/goal clear` | Kill it entirely |
-| `/ps` | Show the timer process currently sleeping |
-| `/stop` | Stop session-owned background terminals |
+| `$loop:loop <interval>: <instructions>` | Start a loop, or change the interval / instructions of the running one |
+| `$loop:stop` | End it — clears the goal, stops the timer |
 
-Or just say "change it to every 5 minutes" and it'll update the goal in place.
+Or just say "change it to every 5 minutes" and it'll update the running loop in
+place.
+
+**It will not stop on its own and it will not ask you for anything.** That's the
+whole point — you started it so you could walk away. If it hits something it
+can't do, it writes that down, moves to the next thing, and keeps going. Ending
+it is your call, and `$loop:stop` is how you make it.
+
+If you *want* it to check in, say so in the instructions — "ask me before
+touching prod" — and it'll do exactly that and nothing more.
 
 ## How it actually works
 
@@ -81,7 +87,7 @@ $loop:loop
   -> start exactly ONE `sleep <n>` in a background terminal
   -> poll that terminal until it exits
   -> goal reloads the skill, marker sends it straight back to work
-  -> repeat / finish / block
+  -> repeat until the completion rule hits, or you run $loop:stop
 ```
 
 The goal carries a `Loop mode: active` marker. On re-entry the skill sees it and
@@ -98,7 +104,8 @@ text never lands in a shell command, no matter how creatively you phrase it.
 - **Calendar schedules.** "every Tuesday at 9" is a cron job, not this. Rejected on purpose.
 - **Survive a closed terminal.** Kill the CLI, kill the loop. Not a bug.
 - **Give itself more rope.** It runs in whatever sandbox and approval mode your session is already in. It won't widen filesystem, network, or account access, and it won't do destructive shit unless your instructions explicitly authorized that exact thing.
-- **Spin on a blocker.** If it needs you, it says what it needs and stops — it doesn't burn twenty iterations pretending to make progress.
+- **Stop itself.** Not when it's unsure, not when something needs a decision, not when everything left is blocked. A blocked item is a line in the report, not a reason to quit. Only the completion rule, `$loop:stop`, or clearing/pausing the goal ends a run.
+- **Ask you for approval mid-run.** The instructions you gave it *are* the approval. Anything outside that scope gets skipped and reported, not escalated. Want a checkpoint? Put it in the instructions.
 - **Run two timers.** One sleep at a time, always. A poll returning nothing is not "done".
 
 ## Development
@@ -110,8 +117,9 @@ make test
 
 Validation runs in a pinned, network-disabled container with everything dropped
 — no capabilities, read-only root, 256M, 64 pids. There are no dependencies to
-install because there's no code, just a manifest and a skill, and `make test`
-checks that both still say what they're supposed to say.
+install because there's no code — a manifest and two skills — and `make test`
+checks they still say what they're supposed to say, including that the loop skill
+still refuses to self-stop and the stop skill still refuses to fire on its own.
 
 ## License
 

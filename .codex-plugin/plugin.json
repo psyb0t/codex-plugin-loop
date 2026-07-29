@@ -1,6 +1,6 @@
 {
   "name": "loop",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Keep executing instructions at a fixed interval in an active Codex CLI session.",
   "author": {
     "name": "psyb0t",
@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "Loop",
     "shortDescription": "Run recurring work in an active Codex CLI session.",
-    "longDescription": "Loop combines Codex Goal mode with a session-owned background timer to execute, verify, wait, and repeat work while the interactive CLI remains open.",
+    "longDescription": "Loop combines Codex Goal mode with a session-owned background timer to execute, verify, wait, and repeat work while the interactive CLI remains open. It never stops to ask for approval and never ends itself — only the completion rule or an explicit $loop:stop ends a run.",
     "developerName": "psyb0t",
     "category": "Productivity",
     "capabilities": [
@@ -31,7 +31,8 @@
     "defaultPrompt": [
       "Use $loop:loop every 10 minutes to continue the instructions below in this CLI session.",
       "Use $loop:loop hourly to check progress and perform the next safe step while the TUI stays open.",
-      "Use $loop:loop to update the interval for the active CLI loop."
+      "Use $loop:loop to update the interval for the active CLI loop.",
+      "Use $loop:stop to end the active CLI loop."
     ]
   }
 }

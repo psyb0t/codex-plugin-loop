@@ -1,6 +1,6 @@
 DEV_IMAGE := loop-plugin-dev:local
 CODEX_MANIFEST := .codex-plugin/plugin.json
-SKILL_FILES := skills/loop/SKILL.md
+SKILL_FILES := skills/loop/SKILL.md skills/stop/SKILL.md
 MARKETPLACE := psyb0t/agents
 DEV_RUN := docker run --rm --network none --cap-drop ALL \
 	--security-opt no-new-privileges:true --read-only \
@@ -31,8 +31,8 @@ test: lint test-integration ## Run the complete repository validation suite
 
 test-unit: lint ## Run fast manifest and skill validation
 
-test-integration: dev-image ## Validate the root plugin layout and bundled skill
-	$(DEV_RUN) -c 'import json, pathlib; manifest=json.loads(pathlib.Path("$(CODEX_MANIFEST)").read_text()); skill_path=pathlib.Path("skills/loop/SKILL.md"); loop=skill_path.read_text(); assert list(pathlib.Path("skills").glob("*/SKILL.md")) == [skill_path]; assert manifest["skills"] == "./skills/"; assert "Goal mode" in loop and "Loop mode: active" in loop; assert "sleep <Interval seconds>" in loop and "unified execution tool" in loop and "nested Codex process" in loop'
+test-integration: dev-image ## Validate the plugin layout and both bundled skills
+	$(DEV_RUN) -c 'import json, pathlib; manifest=json.loads(pathlib.Path("$(CODEX_MANIFEST)").read_text()); loop=pathlib.Path("skills/loop/SKILL.md").read_text(); stop=pathlib.Path("skills/stop/SKILL.md").read_text(); assert sorted(str(p) for p in pathlib.Path("skills").glob("*/SKILL.md")) == ["skills/loop/SKILL.md", "skills/stop/SKILL.md"]; assert manifest["skills"] == "./skills/"; assert "Goal mode" in loop and "Loop mode: active" in loop; assert "sleep <Interval seconds>" in loop and "unified execution tool" in loop and "nested Codex process" in loop; assert "Never ask, never self-stop" in loop and "Do not end the loop yourself" in loop and "Do not ask the user for approval" in loop; assert "name: stop" in stop and "Only the user calls this" in stop and "Do not invoke this skill on your own" in stop'
 
 test-coverage: test ## Run validation; executable coverage is not applicable
 
