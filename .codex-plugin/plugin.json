@@ -1,6 +1,6 @@
 {
   "name": "loop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Keep executing instructions at a fixed interval in an active Codex CLI session.",
   "author": {
     "name": "psyb0t",
@@ -12,17 +12,17 @@
   "keywords": [
     "automation",
     "cli",
-    "goal",
     "loop",
     "recurring",
-    "terminal",
+    "sleep",
+    "timer",
     "tui"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Loop",
     "shortDescription": "Run recurring work in an active Codex CLI session.",
-    "longDescription": "Loop combines Codex Goal mode with a session-owned background timer to execute, verify, wait, and repeat work while the interactive CLI remains open. It never stops to ask for approval and never ends itself — only the completion rule or an explicit $loop:stop ends a run.",
+    "longDescription": "Loop holds one Codex CLI turn open and waits on the input-interruptible clock.sleep tool between iterations to execute, verify, report, and repeat work while the interactive CLI remains open. Typing to a waiting loop wakes it immediately. It never stops to ask for approval and never ends itself — only the completion rule or an explicit $loop:stop ends a run. Requires features.current_time_reminder with sleep_tool enabled.",
     "developerName": "psyb0t",
     "category": "Productivity",
     "capabilities": [

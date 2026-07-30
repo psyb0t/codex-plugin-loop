@@ -4,6 +4,50 @@ All notable changes per release. Versions follow [semver](https://semver.org)
 pre-1.0 conventions: minor bumps may include breaking changes (called out
 explicitly), patch bumps are docs / build / fixes only.
 
+## v0.3.0 — 2026-07-30
+
+Rebuilt on `clock.sleep`. A killed turn no longer kills the loop.
+
+- **Breaking. Requires the `clock.sleep` tool, which Codex ships disabled.**
+  Add this to `~/.codex/config.toml` and restart the CLI:
+
+  ```toml
+  [features.current_time_reminder]
+  enabled = true
+  sleep_tool = true
+  ```
+
+  Both keys are load-bearing. The shorthand `current_time_reminder = true`
+  enables the clock but leaves `sleep_tool` at its default of `false`, which
+  exposes no sleep tool at all. Without it the loop now refuses to start rather
+  than faking a wait with a shell `sleep`.
+- **Breaking. Goal mode and the background timer terminal are gone.** The loop
+  used to write itself into a Codex Goal and poll a `sleep` running in a
+  session-owned background terminal. It now holds a single turn open and waits
+  on `clock.sleep` between iterations, so there is no goal to clear, no terminal
+  to poll, and nothing to stop except the loop itself. Existing loops do not
+  migrate — start a new one with `$loop:loop`.
+- **Talking to a running loop wakes it immediately.** `clock.sleep` ends early
+  when new input arrives, so a message no longer waits out the rest of the
+  interval before being seen. The loop handles what you said and goes back to
+  waiting.
+- **A killed turn is no longer a stopped loop.** Every progress report carries a
+  `Loop state: active | interval_ms=<n> | iteration=<n> | until=<rule>` line.
+  On the next turn the loop reads the most recent one and resumes from there, so
+  Esc, a tool error, or a dropped turn are recoverable instead of terminal. The
+  line repeats every iteration so the newest copy survives context compaction.
+- **`$loop:stop` writes `Loop state: stopped`.** That terminator is what stops a
+  resume, which makes it the only reliable way to end a run. Esc now pauses a
+  loop rather than ending it — nothing runs while the turn is dead, so the loop
+  picks back up on your next message.
+- Sleep-call failures no longer end a run: an out-of-range or rejected
+  `duration_ms` is clamped into the accepted 1–43200000 ms range and retried.
+  Intervals longer than the 12-hour per-call cap are chained instead of silently
+  shortened.
+- Plugin metadata and `make test-integration` assertions track the new
+  mechanism. The suite now also asserts the retired Goal-mode strings are
+  absent, so a stale skill fails instead of passing on old wording.
+
 ## v0.2.0 — 2026-07-29
 
 The loop stopped itself. Now it can't.
