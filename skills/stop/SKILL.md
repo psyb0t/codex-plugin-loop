@@ -16,11 +16,13 @@ of unblocked work, or judging that the loop "should" end are NOT reasons to
 stop it — the loop skill covers all of those by reporting and continuing.
 
 Invoke this only when the user explicitly says to stop, end, kill, cancel, or
-halt the loop, or when the loop's own instructions name a condition and that
-condition is now demonstrably met.
+halt the loop.
 
-If the loop already met its completion rule, it closes out on its own — that
-path does not need this skill.
+That is the whole list. A completion rule being met is **not** on it: the loop
+closes itself out on that path and writes its own terminator, so a rule you
+judge to be satisfied is never a reason to reach for this skill. Deciding that
+some condition "counts as" the stop condition is the self-stop this plugin
+exists to prevent.
 
 ## What to do
 
@@ -28,9 +30,10 @@ Invoking this while a loop is waiting counts as new input, so the pending
 `clock.sleep` returns `Sleep interrupted by new input.` and hands control back
 mid-turn. That is the moment this skill runs.
 
-1. If no loop is running and the most recent `Loop state:` line in the
-   conversation says `stopped` — or there is no such line at all — there is
-   nothing to stop; say so and change nothing.
+1. Find the most recent `Loop state:` line in the conversation. If it says
+   `stopped`, or there is no such line at all, there is nothing to stop — say so
+   and change nothing. Only a latest line reading `active` needs stopping, and
+   it needs it whether or not a turn is still live.
 2. Do **not** call `clock.sleep` again. Skipping the re-arm is what ends the
    loop — there is no timer to kill and no goal to clear.
 3. Emit `Loop state: stopped`. This is the load-bearing step: the loop skill
@@ -53,6 +56,7 @@ user pressed Esc and then says to stop, there is no live turn to close, but the
 latest state line still says `active` and would trigger a resume — write the
 terminator anyway.
 
-Stopping discards the loop's state outright — the instructions, interval, and
-completion rule lived in that turn and go with it. Starting again means giving
-them again with `$loop:loop`.
+Stopping retires the loop rather than pausing it. The old `Loop state: active`
+lines stay in the conversation as history, but the terminator supersedes them,
+so nothing resumes from them. Starting again means giving the interval,
+instructions, and completion rule fresh with `$loop:loop`.

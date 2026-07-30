@@ -88,6 +88,10 @@ Or just say "change it to every 5 minutes" and it'll update the running loop in
 place. You don't have to wait for a tick to say it either — typing anything
 wakes the sleep immediately, it deals with you, then goes back to waiting.
 
+Re-running `$loop:loop` on a live loop **updates** it, it doesn't start a second
+one — whatever you leave out keeps its old value, and the iteration count
+carries over.
+
 **It will not stop on its own and it will not ask you for anything.** That's the
 whole point — you started it so you could walk away. If it hits something it
 can't do, it writes that down, moves to the next thing, and keeps going. Ending
@@ -136,8 +140,12 @@ Loop state: active | interval_ms=600000 | iteration=7 | until=tests pass
 Next time you type anything, it reads the most recent one, sees a loop that was
 never stopped, says so, and picks up at the next iteration. Repeating the line
 every iteration is what makes it survive context compaction — the newest copy is
-always near the end. `$loop:stop` writes `Loop state: stopped`, which is the
-terminator that stops it coming back.
+always near the end.
+
+`Loop state: stopped` is the terminator that stops it coming back, and a run
+that ends properly always writes one — both `$loop:stop` and a completion rule
+being met. So a loop that finished its job stays finished; only a run that was
+*killed* mid-flight comes back.
 
 **The catch, and it's unavoidable:** while the turn is dead, nothing is running
 — Codex only invokes the model when there's something to respond to. So a loop

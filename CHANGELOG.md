@@ -4,6 +4,28 @@ All notable changes per release. Versions follow [semver](https://semver.org)
 pre-1.0 conventions: minor bumps may include breaking changes (called out
 explicitly), patch bumps are docs / build / fixes only.
 
+## v0.3.1 — 2026-07-30
+
+Three holes in the v0.3.0 skills, found reading them back end to end.
+
+- **`$loop:loop` on a running loop now updates it instead of starting a second
+  one.** The controls table promised this and nothing implemented it, so a
+  second invocation could leave two loops re-arming against each other — the
+  exact spin the skill warns about elsewhere. An update applies only the fields
+  given, keeps the rest, and carries the iteration count forward; a fresh start
+  happens only when no loop is active.
+- **The stop skill no longer permits stopping on a condition it judges met.**
+  It had grown back an "or when the loop's own instructions name a condition and
+  that condition is now demonstrably met" clause — a self-stop escape hatch of
+  exactly the kind v0.2.0 removed, and redundant besides, since a met completion
+  rule is handled by the loop skill closing itself out.
+- **A run that completes normally writes its own `Loop state: stopped`.** Signing
+  off while the latest state line still said `active` meant the next message
+  resurrected a finished loop. The README said only `$loop:stop` wrote the
+  terminator; both paths do, and it now says so.
+- `make test-integration` asserts the update-in-place rule and the stop skill's
+  refusal, both verified to fail when the guarding text is removed.
+
 ## v0.3.0 — 2026-07-30
 
 Rebuilt on `clock.sleep`. A killed turn no longer kills the loop.

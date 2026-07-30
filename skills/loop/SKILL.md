@@ -61,6 +61,24 @@ these instructions — deep context compaction can drop them while the repeated
 state line survives — reload this skill with `$loop:loop` and resume from the
 recovered interval and completion rule rather than guessing at the procedure.
 
+## Start a loop or update the running one
+
+`$loop:loop` means both "start" and "change", so decide which before parsing.
+
+If the latest `Loop state:` line says `active`, a loop is already running and
+this invocation **updates it in place**. Apply whichever of the interval,
+instructions, and completion rule the user gave, keep the rest as they were,
+carry the iteration count forward, and say in one line what changed. Never start
+a second loop alongside the first: two loops mean two sleep chains competing to
+re-arm, which is the spinning failure described under **Wait for the next
+iteration**.
+
+Only when there is no active loop does this start a fresh one at iteration 1.
+
+The same applies to a plain-language change during a run — "make it every five
+minutes", "also run the linter". That arrives as an interruption, and it updates
+the running loop exactly as an explicit `$loop:loop` would.
+
 ## Parse the request
 
 Accept a fixed interval plus instructions. Supported forms include:
@@ -76,9 +94,11 @@ Extract:
 - instructions to execute on every iteration; and
 - an optional completion or stop condition.
 
-Ask one concise question only when the interval or instructions are missing. Do
-not invent either. Reject calendar schedules and absolute times — this loop is
-bound to one live turn, not a durable scheduler.
+Ask one concise question only when the interval or instructions are missing on a
+fresh start. Do not invent either. An update supplies only what is changing, so
+a missing field there means "leave it as it was", not "ask". Reject calendar
+schedules and absolute times — this loop is bound to one live turn, not a
+durable scheduler.
 
 Normalize the interval to a positive integer number of **milliseconds** for
 `clock.sleep`. Never evaluate the user's interval as code.
